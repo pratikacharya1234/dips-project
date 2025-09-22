@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin: 0 auto;
+            max-width: 300px;
+        }
+
+        .square {
+            width: 100px;
+            height: 100px;
+            font-size: 40px;
+            border: 2px solid #333;
+            background-color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .square:hover {
+            background-color: #e0e0e0;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: red;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <div class="board">
+        <button class="square" onclick="play(0)"></button>
+        <button class="square" onclick="play(1)"></button>
+        <button class="square" onclick="play(2)"></button>
+        <button class="square" onclick="play(3)"></button>
+        <button class="square" onclick="play(4)"></button>
+        <button class="square" onclick="play(5)"></button>
+        <button class="square" onclick="play(6)"></button>
+        <button class="square" onclick="play(7)"></button>
+        <button class="square" onclick="play(8)"></button>
+    </div>
+    <button onclick="reset()">Reset</button>
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        
+        function play(index) {
+            if (board[index] === '') {
+                board[index] = currentPlayer;
+                document.querySelectorAll('.square')[index].textContent = currentPlayer;
+                if (checkWin()) {
+                    alert('Player ' + currentPlayer + ' wins!');
+                    reset();
+                    return;
+                }
+                if (board.every(cell => cell !== '')) {
+                    alert('Tie!');
+                    reset();
+                    return;
+                }
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            }
+        }
+        
+        function checkWin() {
+            const win = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            return win.some(comb => 
+                comb.every(i => board[i] === currentPlayer)
+            );
+        }
+        
+        function reset() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            document.querySelectorAll('.square').forEach(square => 
+                square.textContent = ''
+            );
+        }
+    </script>
+</body>
+</html>
