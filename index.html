@@ -3,116 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Memory Match Game</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
+        .tile {
+            width: 75px;
+            height: 75px;
+            margin: 4px;
+            font-size: 22px;
+            border: 2px solid gray;
+            background-color: white;
         }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin: 0 auto;
-            max-width: 300px;
-        }
-
-        .square {
-            width: 100px;
-            height: 100px;
-            font-size: 40px;
-            border: 2px solid #333;
-            background-color: #fff;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .square:hover {
-            background-color: #e0e0e0;
-        }
-
-        button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: red;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
+        .output{
+            font-size: 20px;
+            color: Green;
         }
     </style>
 </head>
 <body>
-    <h1>Tic-Tac-Toe</h1>
-    <div class="board">
-        <button class="square" onclick="play(0)"></button>
-        <button class="square" onclick="play(1)"></button>
-        <button class="square" onclick="play(2)"></button>
-        <button class="square" onclick="play(3)"></button>
-        <button class="square" onclick="play(4)"></button>
-        <button class="square" onclick="play(5)"></button>
-        <button class="square" onclick="play(6)"></button>
-        <button class="square" onclick="play(7)"></button>
-        <button class="square" onclick="play(8)"></button>
-    </div>
-    <button onclick="reset()">Reset</button>
+    <h1>Welcome to Memory Game</h1>
+    
+    <button onclick="resetBoard()">Reset Game</button>
+
+    <div id="output"></div>
+
     <script>
-        let board = ['', '', '', '', '', '', '', '', ''];
-        let currentPlayer = 'X';
-        
-        function play(index) {
-            if (board[index] === '') {
-                board[index] = currentPlayer;
-                document.querySelectorAll('.square')[index].textContent = currentPlayer;
-                if (checkWin()) {
-                    alert('Player ' + currentPlayer + ' wins!');
-                    reset();
-                    return;
+        let map = [];
+        let tile1 = null;
+        let tile2 = null;
+
+        function loadMap(rows = 4, cols = 4) {
+            let size = rows * cols;
+            let tiles = [];
+            
+            let num = 1;
+            for(let i = 0; i < size / 2; i++) {
+                tiles.push(num);
+                tiles.push(num);
+                num++;
+            }
+            
+            for(let i = tiles.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                let temp = tiles[i];
+                tiles[i] = tiles[j];
+                tiles[j] = temp;
+            }
+            
+            map = [];
+            let index = 0;
+            for(let r = 0; r < rows; r++) {
+                let row = [];
+                for(let c = 0; c < cols; c++) {
+                    row.push(tiles[index]);
+                    index++;
                 }
-                if (board.every(cell => cell !== '')) {
-                    alert('Tie!');
-                    reset();
-                    return;
-                }
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                map.push(row);
             }
         }
-        
-        function checkWin() {
-            const win = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8],
-                [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                [0, 4, 8], [2, 4, 6]
-            ];
-            return win.some(comb => 
-                comb.every(i => board[i] === currentPlayer)
-            );
+
+        function setupGame(rows = 4, cols = 4) {
+            for(let row = 0; row < rows; row++) {
+                for(let col = 0; col < cols; col++) {
+                    document.getElementById('output').innerHTML += 
+                        `<button class='tile' onclick='process(${row}, ${col})'></button>`;
+                }
+                document.getElementById('output').innerHTML += '<br/>';
+            }
         }
-        
-        function reset() {
-            board = ['', '', '', '', '', '', '', '', ''];
-            currentPlayer = 'X';
-            document.querySelectorAll('.square').forEach(square => 
-                square.textContent = ''
-            );
+
+        function resetBoard() {
+            document.getElementById('output').innerHTML = '';
+            loadMap();
+            setupGame();
+            tile1 = null;
+            tile2 = null;
         }
+
+        let process = (row, col) => {
+            let clicked_tile = row * 4 + col;
+            let tiles = document.getElementsByClassName('tile');
+            
+            if(!tile1) {
+                tile1 = tiles[clicked_tile];
+                tile1.innerHTML = map[row][col];
+            } else if(!tile2 && tiles[clicked_tile] != tile1) {
+                tile2 = tiles[clicked_tile];
+                tile2.innerHTML = map[row][col];
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        let checkMatch = () => {
+            if(tile1.innerHTML == tile2.innerHTML) {
+                tile1.disabled = true;
+                tile2.disabled = true;
+            } else {
+                tile1.innerHTML = '';
+                tile2.innerHTML = '';
+            }
+            
+            tile1 = null;
+            tile2 = null;
+        }
+
+        loadMap();
+        setupGame();
     </script>
 </body>
 </html>
