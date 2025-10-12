@@ -1,114 +1,155 @@
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Match Game</title>
-    <style>
-        .tile {
-            width: 75px;
-            height: 75px;
-            margin: 4px;
-            font-size: 22px;
-            border: 2px solid gray;
-            background-color: white;
-        }
+<html>
+	<head>
+		<title>Minimalist Mastermind</title>		
+		<style>
+			input {
+				width: 2ch;
+				font-size: xxx-large;
+				text-align: center;
+			}
+			
+			p {
+				font-size: xxx-large;
+				margin-top: 0px;
+				margin-bottom: 0px
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Minimalist Mastermind</h1>
+		
+		<div id='guessArea'>
+			<input type='text' id='slot1'>
+			<input type='text' id='slot2'>
+			<input type='text' id='slot3'>
+			<input type='text' id='slot4'>
+		</div>
+		
+		<br><button id='guess' onclick='tryGuess()'>Try Guess</button><br><br>
+		
+		<div id='pastGuesses'></div>
 
-        .output{
-            font-size: 20px;
-            color: Green;
-        }
-    </style>
-</head>
-<body>
-    <h1>Welcome to Memory Game</h1>
-    
-    <button onclick="resetBoard()">Reset Game</button>
+		<script>
+			let code = [];
+			resetGame();
+			
+			function resetGame() {
+				code = [];
+				
+				// Load a new code
+				for (let i = 0; i < 4; i++)
+					code.push(Math.floor(Math.random() * 6) + 1);
+				
+				document.getElementById('pastGuesses').innerHTML = "";
+				
+				// Return each input field to its beginning state
+				for (let i = 1; i <= 4; i++) {
+					let slot = document.getElementById('slot' + i);
+					slot.disabled = false;
+					slot.value = '';
+					slot.style.backgroundColor = 'white';
+					slot.style.color = 'black';
+				}
+				
+				// Revert the button back to Try Guess
+				document.getElementById('guess').innerHTML = "Try Guess";
+				document.getElementById('guess').setAttribute("onclick", "tryGuess()");
+			}
+		
+			function clearSlots() {
+				for (let i = 1; i <= 4; i++)
+					document.getElementById("slot" + i).value = '';
+			}
+		
+			// Custom error class
+			class InvalidInputError extends Error {
+				constructor(message) {
+					super(message);
+					this.name = 'InvalidInputError';
+				}
+			}
+		
+			function checkInput(slot) {				
+				try {
+					if (isNaN(slot) || slot < 1 || slot > 6) {
+						throw new InvalidInputError("Input must be a number between 1 and 6");
+					}
+					return true;
+				} catch (e) {
+					console.error(e.message);
+					return false;
+				}
+			}
+		
+			function tryGuess() {
+				// Retrieve guesses from the page
+				let guesses = [];
+				for (let i = 1; i <= 4; i++) {
+					let slot = parseInt(document.getElementById('slot' + i).value);
+					if (checkInput(slot))
+						guesses.push(slot);
+					else
+						break;
+				}
+			
+				// If there are four useful values, check amounts
+				if (guesses.length === 4) {
+					let correctPosition = 0;
+					let correctColor = 0;
+					
+					// Copy array to make changes
+					const codeCopy = [...code];
+					
+					// Determine correct position first
+					for (let i = 0; i < 4; i++) 
+						if (guesses[i] === codeCopy[i]) {							
+							correctPosition++;
+							// Account for used peg
+							codeCopy[i] = '-';
+						}
+					
+					// Determine remaining correct colors
+					for (let i = 0; i < 4; i++)
+						if (codeCopy.includes(guesses[i])) {
+							correctColor++;
+							codeCopy[codeCopy.indexOf(guesses[i])] = '-';
+						}
+					
+					if (correctPosition === 4) {						
+						for (let i = 1; i <= 4; i++) {
+							let slot = document.getElementById('slot' + i);
+							slot.disabled = true;
+							slot.style.backgroundColor = 'lime';
+							slot.style.color = 'green';
+						}
+						
+						document.getElementById('guess').innerHTML = "Reset";
+						document.getElementById('guess').setAttribute("onclick", "resetGame()");
+					}
+					// Add incorrect guess to the display
+					else {
+						let output = '<p>';
+						for (let i = 0; i < 4; i++)
+							output += '<input disabled value="' + guesses[i] + '">';
+						
+						// Add black piece for correct position and color
+						for (let i = 0; i < correctPosition; i++)							
+							output += '&#9823;';
+						
+						// Add white piece for correct color only
+						for (let i = 0; i < correctColor; i++)
+							output += '&#9817;';
+						
+						// Update display
+						let currentDisplay = document.getElementById('pastGuesses');
+						currentDisplay.innerHTML = output + '</p>' + currentDisplay.innerHTML;	
 
-    <div id="output"></div>
-
-    <script>
-        let map = [];
-        let tile1 = null;
-        let tile2 = null;
-
-        function loadMap(rows = 4, cols = 4) {
-            let size = rows * cols;
-            let tiles = [];
-            
-            let num = 1;
-            for(let i = 0; i < size / 2; i++) {
-                tiles.push(num);
-                tiles.push(num);
-                num++;
-            }
-            
-            for(let i = tiles.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
-                let temp = tiles[i];
-                tiles[i] = tiles[j];
-                tiles[j] = temp;
-            }
-            
-            map = [];
-            let index = 0;
-            for(let r = 0; r < rows; r++) {
-                let row = [];
-                for(let c = 0; c < cols; c++) {
-                    row.push(tiles[index]);
-                    index++;
-                }
-                map.push(row);
-            }
-        }
-
-        function setupGame(rows = 4, cols = 4) {
-            for(let row = 0; row < rows; row++) {
-                for(let col = 0; col < cols; col++) {
-                    document.getElementById('output').innerHTML += 
-                        `<button class='tile' onclick='process(${row}, ${col})'></button>`;
-                }
-                document.getElementById('output').innerHTML += '<br/>';
-            }
-        }
-
-        function resetBoard() {
-            document.getElementById('output').innerHTML = '';
-            loadMap();
-            setupGame();
-            tile1 = null;
-            tile2 = null;
-        }
-
-        let process = (row, col) => {
-            let clicked_tile = row * 4 + col;
-            let tiles = document.getElementsByClassName('tile');
-            
-            if(!tile1) {
-                tile1 = tiles[clicked_tile];
-                tile1.innerHTML = map[row][col];
-            } else if(!tile2 && tiles[clicked_tile] != tile1) {
-                tile2 = tiles[clicked_tile];
-                tile2.innerHTML = map[row][col];
-                setTimeout(checkMatch, 1000);
-            }
-        }
-
-        let checkMatch = () => {
-            if(tile1.innerHTML == tile2.innerHTML) {
-                tile1.disabled = true;
-                tile2.disabled = true;
-            } else {
-                tile1.innerHTML = '';
-                tile2.innerHTML = '';
-            }
-            
-            tile1 = null;
-            tile2 = null;
-        }
-
-        loadMap();
-        setupGame();
-    </script>
-</body>
+						clearSlots();
+					} 
+				}
+			}
+		</script>
+	</body>
 </html>
