@@ -1,155 +1,110 @@
-
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>Minimalist Mastermind</title>		
-		<style>
-			input {
-				width: 2ch;
-				font-size: xxx-large;
-				text-align: center;
-			}
-			
-			p {
-				font-size: xxx-large;
-				margin-top: 0px;
-				margin-bottom: 0px
-			}
-		</style>
-	</head>
-	<body>
-		<h1>Minimalist Mastermind</h1>
-		
-		<div id='guessArea'>
-			<input type='text' id='slot1'>
-			<input type='text' id='slot2'>
-			<input type='text' id='slot3'>
-			<input type='text' id='slot4'>
-		</div>
-		
-		<br><button id='guess' onclick='tryGuess()'>Try Guess</button><br><br>
-		
-		<div id='pastGuesses'></div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Puzzle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
 
-		<script>
-			let code = [];
-			resetGame();
-			
-			function resetGame() {
-				code = [];
-				
-				// Load a new code
-				for (let i = 0; i < 4; i++)
-					code.push(Math.floor(Math.random() * 6) + 1);
-				
-				document.getElementById('pastGuesses').innerHTML = "";
-				
-				// Return each input field to its beginning state
-				for (let i = 1; i <= 4; i++) {
-					let slot = document.getElementById('slot' + i);
-					slot.disabled = false;
-					slot.value = '';
-					slot.style.backgroundColor = 'white';
-					slot.style.color = 'black';
-				}
-				
-				// Revert the button back to Try Guess
-				document.getElementById('guess').innerHTML = "Try Guess";
-				document.getElementById('guess').setAttribute("onclick", "tryGuess()");
-			}
-		
-			function clearSlots() {
-				for (let i = 1; i <= 4; i++)
-					document.getElementById("slot" + i).value = '';
-			}
-		
-			// Custom error class
-			class InvalidInputError extends Error {
-				constructor(message) {
-					super(message);
-					this.name = 'InvalidInputError';
-				}
-			}
-		
-			function checkInput(slot) {				
-				try {
-					if (isNaN(slot) || slot < 1 || slot > 6) {
-						throw new InvalidInputError("Input must be a number between 1 and 6");
-					}
-					return true;
-				} catch (e) {
-					console.error(e.message);
-					return false;
-				}
-			}
-		
-			function tryGuess() {
-				// Retrieve guesses from the page
-				let guesses = [];
-				for (let i = 1; i <= 4; i++) {
-					let slot = parseInt(document.getElementById('slot' + i).value);
-					if (checkInput(slot))
-						guesses.push(slot);
-					else
-						break;
-				}
-			
-				// If there are four useful values, check amounts
-				if (guesses.length === 4) {
-					let correctPosition = 0;
-					let correctColor = 0;
-					
-					// Copy array to make changes
-					const codeCopy = [...code];
-					
-					// Determine correct position first
-					for (let i = 0; i < 4; i++) 
-						if (guesses[i] === codeCopy[i]) {							
-							correctPosition++;
-							// Account for used peg
-							codeCopy[i] = '-';
-						}
-					
-					// Determine remaining correct colors
-					for (let i = 0; i < 4; i++)
-						if (codeCopy.includes(guesses[i])) {
-							correctColor++;
-							codeCopy[codeCopy.indexOf(guesses[i])] = '-';
-						}
-					
-					if (correctPosition === 4) {						
-						for (let i = 1; i <= 4; i++) {
-							let slot = document.getElementById('slot' + i);
-							slot.disabled = true;
-							slot.style.backgroundColor = 'lime';
-							slot.style.color = 'green';
-						}
-						
-						document.getElementById('guess').innerHTML = "Reset";
-						document.getElementById('guess').setAttribute("onclick", "resetGame()");
-					}
-					// Add incorrect guess to the display
-					else {
-						let output = '<p>';
-						for (let i = 0; i < 4; i++)
-							output += '<input disabled value="' + guesses[i] + '">';
-						
-						// Add black piece for correct position and color
-						for (let i = 0; i < correctPosition; i++)							
-							output += '&#9823;';
-						
-						// Add white piece for correct color only
-						for (let i = 0; i < correctColor; i++)
-							output += '&#9817;';
-						
-						// Update display
-						let currentDisplay = document.getElementById('pastGuesses');
-						currentDisplay.innerHTML = output + '</p>' + currentDisplay.innerHTML;	
+        #puzzle {
+            width: 400px;
+            height: 400px;
+            border: 2px solid #000;
+            background-color: #6B46C1;
+            display: grid;
+            grid-template-columns: 100px 100px 200px;
+            grid-template-rows: 100px 100px 200px;
+            gap: 0;
+        }
 
-						clearSlots();
-					} 
-				}
-			}
-		</script>
-	</body>
+        .box {
+            background-color: #805AD5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border: 1px solid #6B46C1;
+        }
+
+        #button-grid {
+            grid-column: 3;
+            grid-row: 1 / 4;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 0;
+            background-color: #6B46C1;
+        }
+
+        .grid-btn {
+            background-color: #B794F6;
+            border: 1px solid #805AD5;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+        <div id="puzzle">
+        <div class="box" id="boxA">A</div>
+        <div class="box" id="boxB">B</div>
+        <div class="box" id="boxC">C</div>
+        <div class="box" id="boxD">D</div>
+        <div id="button-grid">
+        </div>
+    </div>
+
+    <script>
+
+        const buttonGrid = document.getElementById('button-grid');
+        
+        for (let i = 0; i < 100; i++) {
+            const button = document.createElement('button');
+            button.className = 'grid-btn';
+            buttonGrid.appendChild(button);
+        }
+
+        const puzzle = document.getElementById('puzzle');
+        
+        function highlightBorder() {
+            puzzle.style.border = '2px solid #FF9E30';
+        }
+        
+        function restoreBorder() {
+            puzzle.style.border = '2px solid #000';
+        }
+        
+        puzzle.addEventListener('mouseenter', highlightBorder);
+        puzzle.addEventListener('mouseleave', restoreBorder);
+
+        const allButtons = document.querySelectorAll('.grid-btn');
+        
+        function handleButtonClick(clickedButton, buttonIndex) {
+            clickedButton.style.backgroundColor = '#4A2574';
+            
+            const previousIndex = buttonIndex - 1;
+            if (previousIndex >= 0) {
+                allButtons[previousIndex].style.backgroundColor = '#FF9E30';
+            }
+            
+            const nextIndex = buttonIndex + 1;
+            if (nextIndex < allButtons.length) {
+                allButtons[nextIndex].style.backgroundColor = '#FF9E30';
+            }
+        }
+        
+        allButtons.forEach(function(button, index) {
+            button.addEventListener('click', function() {
+                handleButtonClick(button, index);
+            });
+        });
+    </script>
+</body>
 </html>
