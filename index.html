@@ -1,109 +1,134 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOM Puzzle</title>
+    <title> Submission Form</title>
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+        label {
+            display: block;
+            margin-top: 15px;
         }
-
-        #puzzle {
-            width: 400px;
-            height: 400px;
-            border: 2px solid #000;
-            background-color: #6B46C1;
-            display: grid;
-            grid-template-columns: 100px 100px 200px;
-            grid-template-rows: 100px 100px 200px;
-            gap: 0;
+        
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
         }
-
-        .box {
-            background-color: #805AD5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: blue;
             color: white;
-            font-size: 24px;
-            font-weight: bold;
-            border: 1px solid #6B46C1;
         }
-
-        #button-grid {
-            grid-column: 3;
-            grid-row: 1 / 4;
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            gap: 0;
-            background-color: #6B46C1;
-        }
-
-        .grid-btn {
-            background-color: #B794F6;
-            border: 1px solid #805AD5;
-            cursor: pointer;
+        
+        .error {
+            color: red;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-        <div id="puzzle">
-        <div class="box" id="boxA">A</div>
-        <div class="box" id="boxB">B</div>
-        <div class="box" id="boxC">C</div>
-        <div class="box" id="boxD">D</div>
-        <div id="button-grid">
-        </div>
-    </div>
+    <h2>Comment Submission Form</h2>
+    
+    <form id="myForm">
+        <!-- Part 1: HTML5 Validation -->
+        <label>Name *</label>
+        <input type="text" id="name" required>
+        <span class="error" id="nameError"></span>
+        
+        <label>Email *</label>
+        <input type="email" id="email" required>
+        <span class="error" id="emailError"></span>
+        
+        <label>Comment *</label>
+        <textarea id="comment" required></textarea>
+        <span class="error" id="commentError"></span>
+        
+        <!-- Part 2: Account Creation -->
+        <label>Username *</label>
+        <input type="text" id="username" required>
+        <span class="error" id="usernameError"></span>
+        
+        <label>Password *</label>
+        <input type="password" id="password" required>
+        <span class="error" id="passwordError"></span>
+        
+        <button type="submit">Submit</button>
+    </form>
 
     <script>
-
-        const buttonGrid = document.getElementById('button-grid');
+        // Part 2: JavaScript Validation
+        const form = document.getElementById('myForm');
         
-        for (let i = 0; i < 100; i++) {
-            const button = document.createElement('button');
-            button.className = 'grid-btn';
-            buttonGrid.appendChild(button);
-        }
-
-        const puzzle = document.getElementById('puzzle');
-        
-        function highlightBorder() {
-            puzzle.style.border = '2px solid #FF9E30';
-        }
-        
-        function restoreBorder() {
-            puzzle.style.border = '2px solid #000';
-        }
-        
-        puzzle.addEventListener('mouseenter', highlightBorder);
-        puzzle.addEventListener('mouseleave', restoreBorder);
-
-        const allButtons = document.querySelectorAll('.grid-btn');
-        
-        function handleButtonClick(clickedButton, buttonIndex) {
-            clickedButton.style.backgroundColor = '#4A2574';
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
             
-            const previousIndex = buttonIndex - 1;
-            if (previousIndex >= 0) {
-                allButtons[previousIndex].style.backgroundColor = '#FF9E30';
+            // Get values
+            let name = document.getElementById('name').value;
+            let email = document.getElementById('email').value;
+            let comment = document.getElementById('comment').value;
+            let username = document.getElementById('username').value;
+            let password = document.getElementById('password').value;
+            
+            // Clear previous errors
+            document.getElementById('nameError').textContent = '';
+            document.getElementById('emailError').textContent = '';
+            document.getElementById('commentError').textContent = '';
+            document.getElementById('usernameError').textContent = '';
+            document.getElementById('passwordError').textContent = '';
+            
+            let valid = true;
+            
+            // Validate name
+            if (name.length < 2) {
+                document.getElementById('nameError').textContent = 'Name must be at least 2 characters';
+                valid = false;
             }
             
-            const nextIndex = buttonIndex + 1;
-            if (nextIndex < allButtons.length) {
-                allButtons[nextIndex].style.backgroundColor = '#FF9E30';
+            // Validate email
+            if (!email.includes('@') || !email.includes('.')) {
+                document.getElementById('emailError').textContent = 'Please enter a valid email';
+                valid = false;
             }
-        }
-        
-        allButtons.forEach(function(button, index) {
-            button.addEventListener('click', function() {
-                handleButtonClick(button, index);
-            });
+            
+            // Validate comment
+            if (comment.length < 10) {
+                document.getElementById('commentError').textContent = 'Comment must be at least 10 characters';
+                valid = false;
+            }
+            
+            // Validate username
+            if (username.length < 4) {
+                document.getElementById('usernameError').textContent = 'Username must be at least 4 characters';
+                valid = false;
+            }
+            
+            // Validate password
+            if (password.length < 8) {
+                document.getElementById('passwordError').textContent = 'Password must be at least 8 characters';
+                valid = false;
+            }
+            
+            // Part 3: Input Sanitization to prevent XSS
+            function sanitize(input) {
+                return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            
+            // If form is valid, sanitize and submit
+            if (valid) {
+                let cleanName = sanitize(name);
+                let cleanEmail = sanitize(email);
+                let cleanComment = sanitize(comment);
+                let cleanUsername = sanitize(username);
+                
+                alert('Form submitted successfully!');
+                console.log('Name: ' + cleanName);
+                console.log('Email: ' + cleanEmail);
+                console.log('Comment: ' + cleanComment);
+                console.log('Username: ' + cleanUsername);
+                
+                form.reset();
+            }
         });
     </script>
 </body>
