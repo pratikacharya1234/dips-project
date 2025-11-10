@@ -1,135 +1,221 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title> Submission Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>todolist</title>
     <style>
-        label {
-            display: block;
-            margin-top: 15px;
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
         }
-        
-        input, textarea {
-            width: 100%;
+
+        body.dark-theme {
+            background-color: #222;
+            color: #f5f5f5;
+        }
+
+        .btn {
+            cursor: pointer;
+            background-color: red;
+            color: black;
+            border: none;
+        }
+
+        .task-input {
             padding: 8px;
-            margin-top: 5px;
+            width: 400px;
         }
-        
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: blue;
-            color: white;
+
+        body.dark-theme .task-input {
+            background: #444;
+            color: #f5f5f5;
         }
-        
-        .error {
-            color: red;
-            font-size: 12px;
+
+        .tasks {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+        }
+
+        body.dark-theme .task {
+            border-color: #555;
         }
     </style>
 </head>
-<body>
-    <h2>Comment Submission Form</h2>
-    
-    <form id="myForm">
-        <!-- Part 1: HTML5 Validation -->
-        <label>Name *</label>
-        <input type="text" id="name" required>
-        <span class="error" id="nameError"></span>
-        
-        <label>Email *</label>
-        <input type="email" id="email" required>
-        <span class="error" id="emailError"></span>
-        
-        <label>Comment *</label>
-        <textarea id="comment" required></textarea>
-        <span class="error" id="commentError"></span>
-        
-        <!-- Part 2: Account Creation -->
-        <label>Username *</label>
-        <input type="text" id="username" required>
-        <span class="error" id="usernameError"></span>
-        
-        <label>Password *</label>
-        <input type="password" id="password" required>
-        <span class="error" id="passwordError"></span>
-        
-        <button type="submit">Submit</button>
-    </form>
+<body class="light-theme">
+    <h1>My To-Do List</h1>
+
+    <div>
+        <button class="btn" onclick="changeTheme()">Toggle Dark Mode</button>
+    </div>
+
+    <div class="quote-container">
+        <p class="quote-content">Loading inspirational quote...</p>
+        <p class="quote-writer"></p>
+    </div>
+
+    <div>
+        <strong>Tasks added this session:</strong> <span class="session-counter">0</span>
+    </div>
+
+    <div>
+        <input type="text" class="task-input" placeholder="Enter a new task..." />
+        <button class="btn" onclick="createTask()">Add Task</button>
+    </div>
+
+    <ul class="tasks">
+        <li class="task">No tasks yet. Add one above!</li>
+    </ul>
 
     <script>
-        // Part 2: JavaScript Validation
-        const form = document.getElementById('myForm');
-        
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent form submission
-            
-            // Get values
-            let name = document.getElementById('name').value;
-            let email = document.getElementById('email').value;
-            let comment = document.getElementById('comment').value;
-            let username = document.getElementById('username').value;
-            let password = document.getElementById('password').value;
-            
-            // Clear previous errors
-            document.getElementById('nameError').textContent = '';
-            document.getElementById('emailError').textContent = '';
-            document.getElementById('commentError').textContent = '';
-            document.getElementById('usernameError').textContent = '';
-            document.getElementById('passwordError').textContent = '';
-            
-            let valid = true;
-            
-            // Validate name
-            if (name.length < 2) {
-                document.getElementById('nameError').textContent = 'Name must be at least 2 characters';
-                valid = false;
+        // Get motivational quote from API
+        function fetchQuote() {
+            fetch('https://api.quotable.io/random')
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('.quote-content').textContent = '"' + data.content + '"';
+                    document.querySelector('.quote-writer').textContent = '- ' + data.author;
+                })
+                .catch(error => {
+                    document.querySelector('.quote-content').textContent = '"Believe you can and you\'re halfway there."';
+                    document.querySelector('.quote-writer').textContent = '- Theodore Roosevelt';
+                });
+        }
+
+        // Load tasks from localStorage
+        function getTasks() {
+            var taskList = localStorage.getItem('todoTasks');
+            if (taskList) {
+                return JSON.parse(taskList);
             }
+            return [];
+        }
+
+        // Save tasks to localStorage
+        function storeTasks(taskList) {
+            localStorage.setItem('todoTasks', JSON.stringify(taskList));
+        }
+
+        // Display tasks on page
+        function showTasks() {
+            var taskList = getTasks();
+            var taskContainer = document.querySelector('.tasks');
             
-            // Validate email
-            if (!email.includes('@') || !email.includes('.')) {
-                document.getElementById('emailError').textContent = 'Please enter a valid email';
-                valid = false;
+            if (taskList.length === 0) {
+                taskContainer.innerHTML = '<li class="task">No tasks yet. Add one above!</li>';
+                return;
             }
+
+            taskContainer.innerHTML = '';
             
-            // Validate comment
-            if (comment.length < 10) {
-                document.getElementById('commentError').textContent = 'Comment must be at least 10 characters';
-                valid = false;
-            }
-            
-            // Validate username
-            if (username.length < 4) {
-                document.getElementById('usernameError').textContent = 'Username must be at least 4 characters';
-                valid = false;
-            }
-            
-            // Validate password
-            if (password.length < 8) {
-                document.getElementById('passwordError').textContent = 'Password must be at least 8 characters';
-                valid = false;
-            }
-            
-            // Part 3: Input Sanitization to prevent XSS
-            function sanitize(input) {
-                return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            }
-            
-            // If form is valid, sanitize and submit
-            if (valid) {
-                let cleanName = sanitize(name);
-                let cleanEmail = sanitize(email);
-                let cleanComment = sanitize(comment);
-                let cleanUsername = sanitize(username);
+            for (var i = 0; i < taskList.length; i++) {
+                var listItem = document.createElement('li');
+                listItem.className = 'task';
                 
-                alert('Form submitted successfully!');
-                console.log('Name: ' + cleanName);
-                console.log('Email: ' + cleanEmail);
-                console.log('Comment: ' + cleanComment);
-                console.log('Username: ' + cleanUsername);
+                var taskContent = document.createElement('span');
+                taskContent.textContent = taskList[i];
                 
-                form.reset();
+                var removeBtn = document.createElement('button');
+                removeBtn.className = 'btn';
+                removeBtn.textContent = 'Delete';
+                removeBtn.onclick = (function(idx) {
+                    return function() {
+                        removeTask(idx);
+                    };
+                })(i);
+                
+                listItem.appendChild(taskContent);
+                listItem.appendChild(removeBtn);
+                taskContainer.appendChild(listItem);
+            }
+        }
+
+        // Add a new task
+        function createTask() {
+            var inputField = document.querySelector('.task-input');
+            var taskContent = inputField.value.trim();
+            
+            if (taskContent === '') {
+                alert('Please enter a task!');
+                return;
+            }
+
+            var taskList = getTasks();
+            taskList.push(taskContent);
+            storeTasks(taskList);
+            
+            // Update session count
+            var counter = sessionStorage.getItem('sessionTaskCount') || 0;
+            counter = parseInt(counter) + 1;
+            sessionStorage.setItem('sessionTaskCount', counter);
+            document.querySelector('.session-counter').textContent = counter;
+            
+            inputField.value = '';
+            showTasks();
+        }
+
+        // Delete a task
+        function removeTask(idx) {
+            var taskList = getTasks();
+            taskList.splice(idx, 1);
+            storeTasks(taskList);
+            showTasks();
+        }
+
+        // Toggle theme (light/dark mode)
+        function changeTheme() {
+            var bodyElement = document.body;
+            
+            if (bodyElement.className === 'light-theme') {
+                bodyElement.className = 'dark-theme';
+                // Save theme preference in cookie
+                document.cookie = 'userTheme=dark-theme; max-age=31536000; path=/';
+            } else {
+                bodyElement.className = 'light-theme';
+                // Save theme preference in cookie
+                document.cookie = 'userTheme=light-theme; max-age=31536000; path=/';
+            }
+        }
+
+        // Load theme from cookie
+        function loadUserTheme() {
+            var allCookies = document.cookie.split(';');
+            for (var i = 0; i < allCookies.length; i++) {
+                var singleCookie = allCookies[i].trim();
+                if (singleCookie.startsWith('userTheme=')) {
+                    var themeName = singleCookie.substring(10);
+                    document.body.className = themeName;
+                    return;
+                }
+            }
+        }
+
+        // Load session count
+        function loadCounter() {
+            var counter = sessionStorage.getItem('sessionTaskCount') || 0;
+            document.querySelector('.session-counter').textContent = counter;
+        }
+
+        // Allow Enter key to add task
+        document.querySelector('.task-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                createTask();
             }
         });
+
+        // Initialize app when page loads
+        window.onload = function() {
+            loadUserTheme();
+            showTasks();
+            loadCounter();
+            fetchQuote();
+        };
     </script>
 </body>
 </html>
