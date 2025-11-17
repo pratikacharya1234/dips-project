@@ -3,219 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>todolist</title>
+    <title>My Media Collection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
+            background-color: white;
         }
-
-        body.dark-theme {
-            background-color: #222;
-            color: #f5f5f5;
+        
+        h1 {
+            text-align: center;
+            color: #333;
         }
-
-        .btn {
-            cursor: pointer;
-            background-color: red;
-            color: black;
-            border: none;
+        
+        .search-container {
+            text-align: center;
+            margin: 20px 0;
         }
-
-        .task-input {
+        
+        #search-input {
             padding: 8px;
-            width: 400px;
+            font-size: 14px;
+            border: 1px solid #999;
+            width: 300px;
         }
-
-        body.dark-theme .task-input {
-            background: #444;
-            color: #f5f5f5;
+        
+        .search-button {
+            padding: 8px 20px;
+            font-size: 14px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
-
-        .tasks {
-            list-style: none;
-            padding: 0;
+        
+        #media-container {
+            margin-top: 30px;
         }
-
-        .task {
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
+        
+        .media-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #ddd;
         }
-
-        body.dark-theme .task {
-            border-color: #555;
+        
+        .media-item img {
+            width: 80px;
+            height: 100px;
+            float: left;
+            margin-right: 15px;
+        }
+        
+        .media-info h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        
+        .media-info p {
+            margin: 3px 0;
+            color: #666;
+            font-size: 14px;
         }
     </style>
 </head>
-<body class="light-theme">
-    <h1>My To-Do List</h1>
-
-    <div>
-        <button class="btn" onclick="changeTheme()">Toggle Dark Mode</button>
+<body>
+    <h1>My Game Collection</h1>
+    
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search by title, developer, or year...">
+        <button class="search-button" onclick="searchMedia()">Search</button>
     </div>
-
-    <div class="quote-container">
-        <p class="quote-content">Loading inspirational quote...</p>
-        <p class="quote-writer"></p>
+    
+    <div id="media-container">
+        <!-- Media items will be added here by JavaScript -->
     </div>
-
-    <div>
-        <strong>Tasks added this session:</strong> <span class="session-counter">0</span>
-    </div>
-
-    <div>
-        <input type="text" class="task-input" placeholder="Enter a new task..." />
-        <button class="btn" onclick="createTask()">Add Task</button>
-    </div>
-
-    <ul class="tasks">
-        <li class="task">No tasks yet. Add one above!</li>
-    </ul>
 
     <script>
-        // Get motivational quote from API
-        function fetchQuote() {
-            fetch('https://api.quotable.io/random')
-                .then(response => response.json())
-                .then(data => {
-                    document.querySelector('.quote-content').textContent = '"' + data.content + '"';
-                    document.querySelector('.quote-writer').textContent = '- ' + data.author;
-                })
-                .catch(error => {
-                    document.querySelector('.quote-content').textContent = '"Believe you can and you\'re halfway there."';
-                    document.querySelector('.quote-writer').textContent = '- Theodore Roosevelt';
-                });
-        }
-
-        // Load tasks from localStorage
-        function getTasks() {
-            var taskList = localStorage.getItem('todoTasks');
-            if (taskList) {
-                return JSON.parse(taskList);
+        // Part 1: Creating Pseudo-Data in JSON Format
+        const mediaData = [
+            {
+                "title": "God of War Ragnarök",
+                "developer": "Santa Monica Studio",
+                "price": 69.99,
+                "year": 2022,
+                "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRYqvGZy040Fx-IvUBKs3HA4mez8oLVyvug5IIyi67KdQJW9f2L"
+            },
+            {
+                "title": "Cyberpunk 2077",
+                "developer": "CD Projekt Red",
+                "price": 39.99,
+                "year": 2020,
+                "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS1dtbBhNNHqyHAUugdokcqjmfvEZgr46h6oVQsLayl0K880gCw"
+            },
+            {
+                "title": "Horizon Forbidden West",
+                "developer": "Guerrilla Games",
+                "price": 59.99,
+                "year": 2022,
+                "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS9pS54AM0VhznOliqkdiDqoqVuJJyB0CKriN1hQizNFN4m3lYq"
+            },
+            {
+                "title": "Minecraft",
+                "developer": "Mojang Studios",
+                "price": 29.99,
+                "year": 2011,
+                "image": "https://www.xbox.com/en-US/games/minecraft"
+            },
+            {
+                "title": "Spider-Man: Miles Morales",
+                "developer": "Insomniac Games",
+                "price": 49.99,
+                "year": 2020,
+                "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQKcHEff0g5xPyrKCdLi4_i1iyXWrlHhza4j9AtZTTd6y3bv0cB"
             }
-            return [];
-        }
+        ];
 
-        // Save tasks to localStorage
-        function storeTasks(taskList) {
-            localStorage.setItem('todoTasks', JSON.stringify(taskList));
-        }
-
-        // Display tasks on page
-        function showTasks() {
-            var taskList = getTasks();
-            var taskContainer = document.querySelector('.tasks');
+        // Part 2: Defining the Media Class
+        class MediaItem {
+            // Private field for encapsulation
+            #rating;
             
-            if (taskList.length === 0) {
-                taskContainer.innerHTML = '<li class="task">No tasks yet. Add one above!</li>';
-                return;
+            constructor(title, developer, price, year, image) {
+                this.title = title;
+                this.developer = developer;
+                this.price = price;
+                this.year = year;
+                this.image = image;
+                this.#rating = 0;
             }
-
-            taskContainer.innerHTML = '';
             
-            for (var i = 0; i < taskList.length; i++) {
-                var listItem = document.createElement('li');
-                listItem.className = 'task';
-                
-                var taskContent = document.createElement('span');
-                taskContent.textContent = taskList[i];
-                
-                var removeBtn = document.createElement('button');
-                removeBtn.className = 'btn';
-                removeBtn.textContent = 'Delete';
-                removeBtn.onclick = (function(idx) {
-                    return function() {
-                        removeTask(idx);
-                    };
-                })(i);
-                
-                listItem.appendChild(taskContent);
-                listItem.appendChild(removeBtn);
-                taskContainer.appendChild(listItem);
+            // Getter method
+            getRating() {
+                return this.#rating;
             }
-        }
-
-        // Add a new task
-        function createTask() {
-            var inputField = document.querySelector('.task-input');
-            var taskContent = inputField.value.trim();
             
-            if (taskContent === '') {
-                alert('Please enter a task!');
-                return;
-            }
-
-            var taskList = getTasks();
-            taskList.push(taskContent);
-            storeTasks(taskList);
-            
-            // Update session count
-            var counter = sessionStorage.getItem('sessionTaskCount') || 0;
-            counter = parseInt(counter) + 1;
-            sessionStorage.setItem('sessionTaskCount', counter);
-            document.querySelector('.session-counter').textContent = counter;
-            
-            inputField.value = '';
-            showTasks();
-        }
-
-        // Delete a task
-        function removeTask(idx) {
-            var taskList = getTasks();
-            taskList.splice(idx, 1);
-            storeTasks(taskList);
-            showTasks();
-        }
-
-        // Toggle theme (light/dark mode)
-        function changeTheme() {
-            var bodyElement = document.body;
-            
-            if (bodyElement.className === 'light-theme') {
-                bodyElement.className = 'dark-theme';
-                // Save theme preference in cookie
-                document.cookie = 'userTheme=dark-theme; max-age=31536000; path=/';
-            } else {
-                bodyElement.className = 'light-theme';
-                // Save theme preference in cookie
-                document.cookie = 'userTheme=light-theme; max-age=31536000; path=/';
-            }
-        }
-
-        // Load theme from cookie
-        function loadUserTheme() {
-            var allCookies = document.cookie.split(';');
-            for (var i = 0; i < allCookies.length; i++) {
-                var singleCookie = allCookies[i].trim();
-                if (singleCookie.startsWith('userTheme=')) {
-                    var themeName = singleCookie.substring(10);
-                    document.body.className = themeName;
-                    return;
+            // Setter method with validation
+            setRating(value) {
+                if (value >= 0 && value <= 10) {
+                    this.#rating = value;
+                } else {
+                    console.log("Rating must be between 0 and 10");
                 }
             }
-        }
-
-        // Load session count
-        function loadCounter() {
-            var counter = sessionStorage.getItem('sessionTaskCount') || 0;
-            document.querySelector('.session-counter').textContent = counter;
-        }
-
-        // Allow Enter key to add task
-        document.querySelector('.task-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                createTask();
+            
+            // Method to return string representation
+            getInfo() {
+                return `${this.title} by ${this.developer}`;
             }
+            
+            // Method to generate and return HTML element
+            displayHTML() {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'media-item';
+                
+                itemDiv.innerHTML = `
+                    <img src="${this.image}" alt="${this.title}">
+                    <div class="media-info">
+                        <h3>${this.title}</h3>
+                        <p>Developer: ${this.developer}</p>
+                        <p>Price: $${this.price.toFixed(2)}</p>
+                        <p>Year: ${this.year}</p>
+                    </div>
+                `;
+                
+                return itemDiv;
+            }
+        }
+
+        // Part 3: Displaying the Media Collection
+        function displayMediaCollection() {
+            const container = document.getElementById('media-container');
+            
+            // Loop through the JSON data and create instances
+            mediaData.forEach(item => {
+                const mediaItem = new MediaItem(
+                    item.title,
+                    item.developer,
+                    item.price,
+                    item.year,
+                    item.image
+                );
+                
+                // Add the HTML element to the page
+                container.appendChild(mediaItem.displayHTML());
+            });
+        }
+
+        // Search function to filter media items
+        function searchMedia() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const container = document.getElementById('media-container');
+            
+            // Clear the container
+            container.innerHTML = '';
+            
+            // Filter and display matching items
+            const filteredData = mediaData.filter(item => {
+                return item.title.toLowerCase().includes(searchTerm) ||
+                       item.developer.toLowerCase().includes(searchTerm) ||
+                       item.year.toString().includes(searchTerm);
+            });
+            
+            // Display filtered results
+            if (filteredData.length > 0) {
+                filteredData.forEach(item => {
+                    const mediaItem = new MediaItem(
+                        item.title,
+                        item.developer,
+                        item.price,
+                        item.year,
+                        item.image
+                    );
+                    container.appendChild(mediaItem.displayHTML());
+                });
+            } else {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No results found. Try a different search term.</p>';
+            }
+        }
+
+        // Allow search on Enter key press
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('search-input').addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    searchMedia();
+                }
+            });
         });
 
-        // Initialize app when page loads
-        window.onload = function() {
-            loadUserTheme();
-            showTasks();
-            loadCounter();
-            fetchQuote();
-        };
+        // Call the function when page loads
+        window.onload = displayMediaCollection;
     </script>
 </body>
 </html>
