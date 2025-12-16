@@ -1,239 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Media Collection</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        
-        .search-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        #search-input {
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #999;
-            width: 300px;
-        }
-        
-        .search-button {
-            padding: 8px 20px;
-            font-size: 14px;
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        
-        #media-container {
-            margin-top: 30px;
-        }
-        
-        .media-item {
-            padding: 15px 0;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .media-item img {
-            width: 80px;
-            height: 100px;
-            float: left;
-            margin-right: 15px;
-        }
-        
-        .media-info h3 {
-            margin: 0 0 5px 0;
-            color: #333;
-        }
-        
-        .media-info p {
-            margin: 3px 0;
-            color: #666;
-            font-size: 14px;
-        }
-    </style>
+    <title>About Me - Nandip Giri</title>
 </head>
-<body>
-    <h1>My Game Collection</h1>
+<body style="background-color: #e8f4f8; font-family: Arial, sans-serif; padding: 20px;">
     
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search by title, developer, or year...">
-        <button class="search-button" onclick="searchMedia()">Search</button>
-    </div>
+    <h1>About Me</h1>
     
-    <div id="media-container">
-        <!-- Media items will be added here by JavaScript -->
-    </div>
-
-    <script>
-        // Part 1: Creating Pseudo-Data in JSON Format
-        const mediaData = [
-            {
-                "title": "God of War Ragnarök",
-                "developer": "Santa Monica Studio",
-                "price": 69.99,
-                "year": 2022,
-                "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRYqvGZy040Fx-IvUBKs3HA4mez8oLVyvug5IIyi67KdQJW9f2L"
-            },
-            {
-                "title": "Cyberpunk 2077",
-                "developer": "CD Projekt Red",
-                "price": 39.99,
-                "year": 2020,
-                "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS1dtbBhNNHqyHAUugdokcqjmfvEZgr46h6oVQsLayl0K880gCw"
-            },
-            {
-                "title": "Horizon Forbidden West",
-                "developer": "Guerrilla Games",
-                "price": 59.99,
-                "year": 2022,
-                "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS9pS54AM0VhznOliqkdiDqoqVuJJyB0CKriN1hQizNFN4m3lYq"
-            },
-            {
-                "title": "Minecraft",
-                "developer": "Mojang Studios",
-                "price": 29.99,
-                "year": 2011,
-                "image": "https://www.xbox.com/en-US/games/minecraft"
-            },
-            {
-                "title": "Spider-Man: Miles Morales",
-                "developer": "Insomniac Games",
-                "price": 49.99,
-                "year": 2020,
-                "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQKcHEff0g5xPyrKCdLi4_i1iyXWrlHhza4j9AtZTTd6y3bv0cB"
-            }
-        ];
-
-        // Part 2: Defining the Media Class
-        class MediaItem {
-            // Private field for encapsulation
-            #rating;
-            
-            constructor(title, developer, price, year, image) {
-                this.title = title;
-                this.developer = developer;
-                this.price = price;
-                this.year = year;
-                this.image = image;
-                this.#rating = 0;
-            }
-            
-            // Getter method
-            getRating() {
-                return this.#rating;
-            }
-            
-            // Setter method with validation
-            setRating(value) {
-                if (value >= 0 && value <= 10) {
-                    this.#rating = value;
-                } else {
-                    console.log("Rating must be between 0 and 10");
-                }
-            }
-            
-            // Method to return string representation
-            getInfo() {
-                return `${this.title} by ${this.developer}`;
-            }
-            
-            // Method to generate and return HTML element
-            displayHTML() {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'media-item';
-                
-                itemDiv.innerHTML = `
-                    <img src="${this.image}" alt="${this.title}">
-                    <div class="media-info">
-                        <h3>${this.title}</h3>
-                        <p>Developer: ${this.developer}</p>
-                        <p>Price: $${this.price.toFixed(2)}</p>
-                        <p>Year: ${this.year}</p>
-                    </div>
-                `;
-                
-                return itemDiv;
-            }
-        }
-
-        // Part 3: Displaying the Media Collection
-        function displayMediaCollection() {
-            const container = document.getElementById('media-container');
-            
-            // Loop through the JSON data and create instances
-            mediaData.forEach(item => {
-                const mediaItem = new MediaItem(
-                    item.title,
-                    item.developer,
-                    item.price,
-                    item.year,
-                    item.image
-                );
-                
-                // Add the HTML element to the page
-                container.appendChild(mediaItem.displayHTML());
-            });
-        }
-
-        // Search function to filter media items
-        function searchMedia() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const container = document.getElementById('media-container');
-            
-            // Clear the container
-            container.innerHTML = '';
-            
-            // Filter and display matching items
-            const filteredData = mediaData.filter(item => {
-                return item.title.toLowerCase().includes(searchTerm) ||
-                       item.developer.toLowerCase().includes(searchTerm) ||
-                       item.year.toString().includes(searchTerm);
-            });
-            
-            // Display filtered results
-            if (filteredData.length > 0) {
-                filteredData.forEach(item => {
-                    const mediaItem = new MediaItem(
-                        item.title,
-                        item.developer,
-                        item.price,
-                        item.year,
-                        item.image
-                    );
-                    container.appendChild(mediaItem.displayHTML());
-                });
-            } else {
-                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No results found. Try a different search term.</p>';
-            }
-        }
-
-        // Allow search on Enter key press
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('search-input').addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    searchMedia();
-                }
-            });
-        });
-
-        // Call the function when page loads
-        window.onload = displayMediaCollection;
-    </script>
+    <h2>Introduction</h2>
+    <p><strong>Name:</strong> Nandip Giri</p>
+    <p><strong>From:</strong> Nepal</p>
+    
+    <h2>Why I Took This Course</h2>
+    <p>I have a strong interest in CS tech and want to create something digitally by writing some lines of code and give it to people. I'm currently working on a startup with a friend, and this course will help me develop the skills I need to bring our ideas to life!</p>
+    
+    <h2>My Favorite Word</h2>
+    <p><strong>Friend</strong> - because great things happen when we build together!</p>
+    
+    <h2>My Favorite Quote</h2>
+    <p><em>"The best code is written not just with logic, but with friendship and the dream of creating something meaningful for people."</em></p>
+    
+    <h2>Three Things I Like</h2>
+    <ul>
+        <li>Travelling - exploring new places and cultures</li>
+        <li>Coding - building projects and bringing ideas to life</li>
+        <li>Spending time with friends - collaborating and creating together</li>
+    </ul>
+    
+    <h2>Person I Chatted With</h2>
+    <p><strong>My Friend and Startup Co-founder</strong></p>
+    <p>We are working together on building our startup and learning new technologies!</p>
+    
+    <h2>Three Things I Learned</h2>
+    <ol>
+        <li>HTML uses tags to structure web pages</li>
+        <li>You can style elements like background colors directly in HTML</li>
+        <li>Lists can be ordered (numbered) or unordered (bullet points)</li>
+    </ol>
+    
+    <h2>What Excites Me About Computer Science</h2>
+    <p>Computer science excites me because with just a few lines of code, I can create digital solutions that can reach and help people around the world. It's amazing how technology connects people and makes ideas come to life!</p>
+    
+    <hr>
+    <p><small>CS1030 - HTML Introduction Activity</small></p>
+    
 </body>
 </html>
